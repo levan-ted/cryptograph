@@ -1,0 +1,18 @@
+.container {
+  background-color: #292649;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.App {
+  background: linear-gradient(135deg, #312a55, rgba(0, 0, 0, 0));
+  width: 800px;
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 100px auto;
+  border-radius: 10px;
+  padding: 3rem 2rem;
+}
