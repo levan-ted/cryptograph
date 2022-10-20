@@ -1,76 +1,85 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { Diagram, DateRangeSelector } from "./components";
+import { Container, Stack } from "@mui/system";
+
 import { refineValues } from "./utils";
 
-import { IValue } from "./models";
+import { HistoricalValue } from "./models";
 
-import {
-  CartesianGrid,
-  Tooltip,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from "recharts";
 import "./App.css";
+import { Typography } from "@mui/material";
 
 function App() {
-  const [data, setData] = useState<IValue[] | null>(null);
+  const [data, setData] = useState<{
+    farm: string;
+    asset: string;
+    values: HistoricalValue[];
+  } | null>(null);
+
+  const onDateRangeChange = (newValue: string) =>
+    console.log("fetch data for this data range:", newValue);
 
   useEffect(() => {
     fetch(
       "https://api.multifarm.fi/jay_flamingo_random_6ix_vegas/get_asset_details/ETH_Convex_steth"
     )
       .then((res) => res.json())
-      .then((data) => setData(refineValues(data.tvlStakedHistory)));
+      .then((data) =>
+        setData({
+          farm: data.farm,
+          asset: data.asset,
+          values: refineValues(data.tvlStakedHistory),
+        })
+      );
   }, []);
 
   if (data === null) {
     return null;
   }
-  console.log(data);
+
   return (
-    <div className="container">
-      <div className="App">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            width={500}
-            height={300}
-            data={data}
-            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+    <Container sx={{ width: "100%", height: "100vh" }}>
+      <Stack
+        justifyContent={"center"}
+        sx={{
+          width: "fit-content",
+          height: "100%",
+          margin: "0 auto",
+        }}
+      >
+        <Stack direction="row" mb={4}>
+          <Typography
+            component="h4"
+            variant="h4"
+            color="#38c1f0"
+          >{`${data.farm}:`}</Typography>
+          <Typography component="h4" variant="h4" color="#FFF" ml={1}>
+            {data.asset}
+          </Typography>
+        </Stack>
+        <Stack
+          sx={{
+            maxWidth: "800px",
+            width: "80vw",
+            height: "500px",
+            background: "linear-gradient(135deg, #312a55, rgba(0, 0, 0, 0))",
+            borderRadius: "15px",
+          }}
+        >
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
           >
-            <defs>
-              <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              tick={{ stroke: "#38c4ff" }}
-              tickMargin={10}
-              reversed
-            />
-            <YAxis
-              tick={{ stroke: "#38c4ff" }}
-              tickMargin={10}
-              unit="B"
-              type="number"
-              domain={["dataMin - 0.01", "auto"]}
-            />
-            <Tooltip />
-            {/* <Legend /> */}
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke="#9807ab"
-              fill="url(#colorUv)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+            <Typography component="h6" variant="h6" color="#FFF" p={4}>
+              Asset TVL
+            </Typography>
+            <DateRangeSelector onChange={onDateRangeChange} />
+          </Stack>
+          <Diagram values={data.values} />
+        </Stack>
+      </Stack>
+    </Container>
   );
 }
 
